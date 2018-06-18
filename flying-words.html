@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>弹幕</title>
+	<link rel="stylesheet" href="">
+	<style type="text/css">
+		.flyingwords-wrap {
+			position: relative;
+			margin: 0 auto;
+			width: 600px;
+			height: 400px;
+		}
+		canvas {
+			position: absolute;
+			top: 30px;
+			left: 0;
+		}
+	</style>
+</head>
+<body>
+	<div class="flyingwords-wrap">
+		<video id="video" src="source/flyingwords.mp4" controls="controls" width="600px" height="400px"></video>
+		<canvas id="drawing">drawing area</canvas>
+		<input type="text" id="text">
+		<input type="color" id="color">
+		<input type="range" id="range" value="20">
+		<input type="button" id="btn" value="发弹幕">
+	</div>
+	<script type="text/javascript">
+		let $ = document.querySelector.bind(document);
+		let data = []
+
+		class Flyingwords {
+			constructor (obj, VideoCanvas) {
+				this.ctx = VideoCanvas.context;
+				this.video = VideoCanvas.video;
+				this.fontSize = obj.fontSize;
+				this.value = obj.value;
+				this.x = VideoCanvas.video.width;
+				this.y = Math.floor(Math.random() * (VideoCanvas.video.height - 140) + 40) ;
+				this.speed = obj.speed;
+				this.time = obj.time;
+				this.color = obj.color;
+			}
+			draw () {
+				this.ctx.font = this.fontSize + 'px Calibri';
+				this.ctx.fillStyle = this.color;
+				this.ctx.textAlign = 'center';
+				this.ctx.textBaseline = 'middle';
+				this.ctx.fillText(this.value, this.x, this.y);
+			}
+		}
+
+		class VideoCanvas {
+			constructor (canvas, video, options = {}) {
+				if (!canvas || !video) return
+				this.canvas = canvas;
+				this.video = video;
+				let defaultOptions = {
+					data: [],
+					speed: 2,
+					time: 0,
+					color: 'gold',
+					fontSize: 20,
+					opacity: 0.3
+				}
+				Object.assign(this, defaultOptions, options);
+				this.context = canvas.getContext('2d');
+				this.canvas.width = video.clientWidth;
+				this.canvas.height = video.clientHeight - 60;
+				this.isPaused = false;
+				this.flyingwords = this.data.map(data => new Flyingwords(data, this));
+			}
+			add (_data) {
+				this.data.push(_data);
+				let _add = new Flyingwords(_data, this);
+				this.flyingwords.push(_add);
+			}
+			render () {
+				this.context.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
+
+				this.flyingwords.map(flyingword => {
+					if (flyingword.video.currentTime > flyingword. time) {
+						flyingword.draw();
+						flyingword.x = flyingword.x - flyingword.speed;
+					}
+				})
+			}
+		}
+
+
+		let canvas = $('#drawing'),
+			video = $('#video'),
+			videoCanvas = new VideoCanvas(canvas, video, {data});
+		let run = function () {
+			videoCanvas.render();
+			if (!videoCanvas.isPaused) {
+				requestAnimationFrame(run)
+			}
+		}
+
+		$('#video').addEventListener('play', function() {
+			videoCanvas.isPaused = false;
+			run()
+		})
+
+		$('#video').addEventListener('pause', function () {
+			videoCanvas.isPaused = true
+		})
+
+		$('#btn').addEventListener('click', function () {
+			let value = $('#text').value;
+			if (!value) return
+			let _data = {
+				value: value,
+				speed: 2,
+				time: 1,
+				color: $('#color').value,
+				fontSize: $('#range').value
+			}
+			videoCanvas.add(_data)
+		})
+
+
+	</script>
+</body>
+</html>
