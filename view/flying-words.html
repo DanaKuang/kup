@@ -21,8 +21,8 @@
 </head>
 <body>
 	<div class="flyingwords-wrap">
-		<video id="video" src="source/flyingwords.mp4" controls="controls" width="600px" height="400px"></video>
 		<canvas id="drawing">drawing area</canvas>
+		<video id="video" src="source/flyingwords.mp4" controls="controls" width="600px" height="400px"></video>
 		<input type="text" id="text">
 		<input type="color" id="color">
 		<input type="range" id="range" value="20">
@@ -38,8 +38,9 @@
 				this.video = VideoCanvas.video;
 				this.fontSize = obj.fontSize;
 				this.value = obj.value;
+				console.log(this.value)
 				this.x = VideoCanvas.video.width;
-				this.y = Math.floor(Math.random() * (VideoCanvas.video.height - 140) + 40) ;
+				this.y = Math.floor(Math.random() * (VideoCanvas.video.height - 140) + 40);
 				this.speed = obj.speed;
 				this.time = obj.time;
 				this.color = obj.color;
@@ -93,7 +94,36 @@
 
 		let canvas = $('#drawing'),
 			video = $('#video'),
-			videoCanvas = new VideoCanvas(canvas, video, {data});
+			videoCanvas = new VideoCanvas(canvas, video, {data}),
+			ws = new WebSocket('ws://localhost:3000');
+			console.log(ws);
+		
+			let count = 0;
+
+			ws.addEventListener('open', function () {
+				console.log(`[CLIENT] open()`);
+				ws.send('Client says Hello!');
+			});
+
+			ws.addEventListener('message', function (message) {
+				console.log(JSON.parse(message.data))
+				let _server_data = JSON.parse(message.data);
+				_server_data.forEach(function (n) {
+					videoCanvas.add(n)
+				})
+				
+				// console.log(`[CLIENT] Received: ${message.data}`);
+				// count++;
+				// if (count > 3) {
+				// 	ws.send('Goodbye!');
+				// 	ws.close();
+				// } else {
+				// 	setTimeout(() => {
+				// 		ws.send(`Hello, I'm Mr No.${count}!`);
+				// 	}, 1000);
+				// }
+			});
+
 		let run = function () {
 			videoCanvas.render();
 			if (!videoCanvas.isPaused) {
