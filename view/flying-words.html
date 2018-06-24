@@ -38,7 +38,6 @@
 				this.video = VideoCanvas.video;
 				this.fontSize = obj.fontSize;
 				this.value = obj.value;
-				console.log(this.value)
 				this.x = VideoCanvas.video.width;
 				this.y = Math.floor(Math.random() * (VideoCanvas.video.height - 140) + 40);
 				this.speed = obj.speed;
@@ -97,31 +96,23 @@
 			videoCanvas = new VideoCanvas(canvas, video, {data}),
 			ws = new WebSocket('ws://localhost:3000');
 			console.log(ws);
-		
-			let count = 0;
 
 			ws.addEventListener('open', function () {
 				console.log(`[CLIENT] open()`);
-				ws.send('Client says Hello!');
 			});
 
 			ws.addEventListener('message', function (message) {
-				console.log(JSON.parse(message.data))
-				let _server_data = JSON.parse(message.data);
-				_server_data.forEach(function (n) {
-					videoCanvas.add(n)
-				})
-				
-				// console.log(`[CLIENT] Received: ${message.data}`);
-				// count++;
-				// if (count > 3) {
-				// 	ws.send('Goodbye!');
-				// 	ws.close();
-				// } else {
-				// 	setTimeout(() => {
-				// 		ws.send(`Hello, I'm Mr No.${count}!`);
-				// 	}, 1000);
-				// }
+				let _data = JSON.parse(message.data)
+				if (_data) {
+					if (_data.type == 'INIT') {
+						_data.data.forEach(n => {
+							console.log(n)
+							videoCanvas.add(n)
+						})
+					} else {
+						videoCanvas.add(_data.data)
+					}
+				}
 			});
 
 		let run = function () {
@@ -146,11 +137,12 @@
 			let _data = {
 				value: value,
 				speed: 2,
-				time: 1,
+				time: $('#video').currentTime,
 				color: $('#color').value,
 				fontSize: $('#range').value
 			}
-			videoCanvas.add(_data)
+			// videoCanvas.add(_data)
+			ws.send(JSON.stringify(_data))
 		})
 
 
