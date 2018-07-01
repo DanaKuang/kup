@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>手写mvvm</title>
+</head>
+<body>
+    <div id="app">
+        <input type="text" k-model="message.a">
+        <div>{{message.a}}</div>
+        <ul>
+            <li>{{message.b}}</li>
+            <li>{{message.b}}</li>
+        </ul>
+        <div>
+            <input type="text" k-model="message.d.e">
+        </div>
+        {{info}}{{message.d.e}}
+    </div>
+    <script src="util.js"></script>
+    <script src="watcher.js"></script>
+    <script src="observe.js"></script>
+    <script src="compile.js"></script>
+    <script src="mvvm.js"></script>
+    <script type="text/javascript">
+        let vm = new MVVM({
+            el: '#app',
+            data: {
+                message: {
+                    a: '我是阿况',
+                    b: '我是ul列表的元素',
+                    c: '我是元素c',
+                    d: {
+                        e: '我是阿飞'
+                    }
+                },
+                info: '我是info'
+            }
+        })
+    </script>
+</body>
+</html>
